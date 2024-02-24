@@ -2,6 +2,19 @@
 
 This project aims to train an AI agent for the popular Facebook game—Tetris Battle. The game's source code can be found at [https://github.com/ylsung/TetrisBattle](https://github.com/ylsung/TetrisBattle).
 
+It is a highly restored version of original game, with features as follow: <br/>
+- 2 players <br/>
+- UI  <br/>
+- T spin and Tetris <br/>
+- back to back <br/>
+- garbage lines <br/>
+- alarm for attacks <br/>
+
+The repository contains:
+
+1. Single player mode (with Q-Learning AI agent)
+2. Two players mode (with our (Team 38) Q-Learning AI agent and Team 37 AI agent)
+
 Presented as our final project for the course CS460200, Introduction to Machine Learning, we are Group 38. In a friendly competition, we pitted our skills against Team 37.
 
 ## Group Members
@@ -29,20 +42,6 @@ Presented as our final project for the course CS460200, Introduction to Machine 
 - **You-Cheng Liu**  
   **Role:** Program Manager  
   **Email:** liu.zack0505@gmail.com  
-
-
-It is a highly restored version of original game, with features as follow: <br/>
-- 2 players <br/>
-- UI  <br/>
-- T spin and Tetris <br/>
-- back to back <br/>
-- garbage lines <br/>
-- alarm for attacks <br/>
-
-The repository contains:
-
-1. Single player mode (with Q-Learning AI agent)
-2. Two players mode (with our (Team 38) Q-Learning AI agent and Team 37 AI agent)
 
 ## **Demo**
 
