@@ -1,4 +1,4 @@
-# Tetris-Battle-With-Q-Learning
+# Machine-learing-for-tetris-battle
 This project is to training AI agent for the popular Facebook game -- Tetris Battle. 
 The game source code is from https://github.com/ylsung/TetrisBattle
 
