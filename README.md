@@ -1,5 +1,7 @@
 # Machine Learning for Tetris Battle
 
+[Project Report](./Team38%20report.pdf)
+
 This project aims to train an AI agent for the popular Facebook game—Tetris Battle. The game's source code can be found at [https://github.com/ylsung/TetrisBattle](https://github.com/ylsung/TetrisBattle).
 
 It is a highly restored version of original game, with features as follow: <br/>
