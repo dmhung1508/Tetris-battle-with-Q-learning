@@ -93,7 +93,7 @@ python train.py
 
 ### Single player mode with AI agent
 ```
-python test.py
+python test.py -mode single
 ```
 
 ### Two players mode with Team 38 AI agent and Team 37 AI agent
