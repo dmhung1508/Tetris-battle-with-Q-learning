@@ -93,22 +93,13 @@ python train.py
 
 ### Single player mode with AI agent
 ```
-(in test.py line 40)
-env = TetrisSingleEnv(gridchoice="none", obs_type="image", mode="human")
-
-(in command line)
 python test.py
 ```
 
 ### Two players mode with Team 38 AI agent and Team 37 AI agent
 ```
-(in test.py line 40)
-env = TetrisDoubleEnv(gridchoice="none", obs_type="image", mode="human")
-
-(in command line)
-python test.py > record.txt
+python test.py -mode double
 ```
-You can see the result in record.txt
 
 ## **Game Rules**
 

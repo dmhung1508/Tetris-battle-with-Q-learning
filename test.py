@@ -26,18 +26,65 @@ def get_args():
     parser.add_argument("--block_size", type=int, default=30, help="Size of a block")
     parser.add_argument("--fps", type=int, default=300, help="frames per second")
     parser.add_argument("--saved_path", type=str, default="my_models")
+    parser.add_argument("--mode", type=str, default="single", help="single or double")
     # parser.add_argument("--output", type=str, default="output.mp4")
 
     args = parser.parse_args()
     return args
 
-def test(opt):
+def test_single(opt):
+    model = torch.load("{}/tetris_10000".format(opt.saved_path), map_location=lambda storage, loc: storage)
+    model.eval()
+
+    env = TetrisSingleEnv(gridchoice="none", obs_type="image", mode="human")
+    env.reset()
+
+    while True:
+        player=env.game_interface.tetris_list[env.game_interface.now_player]
+        tetris = player['tetris']
+        com_event = player["com_event"]
+        next_steps = env.game_interface.get_next_states()
+        next_actions, next_states = zip(*next_steps.items())
+        next_states = torch.stack(next_states)
+        predictions = model(next_states)[:, 0]
+        index = torch.argmax(predictions).item()
+        action = next_actions[index]
+
+        new_x, new_y = get_pos(tetris)
+        drop = False
+        for i in action:
+            if i == 0:
+                continue
+            elif i == 1:
+                #hold the block
+                com_event.set([1])
+                for evt in com_event.get():
+                    tetris.trigger(evt)
+            elif i == 2:
+                drop = True
+                break
+            elif i == 3:
+                tetris.block.rotate()
+            elif i == 4:
+                continue
+            elif i == 5:
+                new_x += +1
+            elif i == 6:
+                new_x += -1
+            else:
+                assert False
+        tetris.px = new_x
+        _, reward, done, infos = env.step(0)
+        if drop:
+            _, reward, done, infos = env.step(2)
+        
+        if done:
+                break
+
+def test_double(opt):
     torch.manual_seed(123)
     model38 = torch.load("{}/tetris_10000".format(opt.saved_path), map_location=lambda storage, loc: storage)
     model38.eval()
-
-    # model37 = torch.load("{}/tetris_10000".format(opt.saved_path), map_location=lambda storage, loc: storage)
-    # model37.eval()
 
     model37 = DeepQNetwork()
     env = TetrisDoubleEnv(gridchoice="none", obs_type="image", mode="human")
@@ -101,20 +148,25 @@ def test(opt):
 
 if __name__ == "__main__":
     opt = get_args()
-    winner_is_37 = 0
-    winner_is_38 = 0
-    num = 20
-    for i in range(num):
-        winner = 38 - test(opt)
-        if  winner == 37:
-            winner_is_37 += 1
-        else:
-            winner_is_38 += 1
-        print('\n####################')
-        print(f'# {i+1}th fight       #')
-        print(f'# WINNER: GROUP {winner} #')
-        print('#                  #')
-        print('####################')
-        
-        print(f"37: {winner_is_37} win rate: {winner_is_37/(i+1)*100} %")
-        print(f"38: {winner_is_38} win rate: {winner_is_38/(i+1)*100} %")
+    if(opt.mode == "single"):
+        test_single(opt)
+    elif (opt.mode == "double"):
+        winner_is_37 = 0
+        winner_is_38 = 0
+        num = 10
+        for i in range(num):
+            winner = 38 - test_double(opt)
+            if  winner == 37:
+                winner_is_37 += 1
+            else:
+                winner_is_38 += 1
+            print('\n####################')
+            print(f'# {i+1}th fight       #')
+            print(f'# WINNER: GROUP {winner} #')
+            print('#                  #')
+            print('####################')
+            
+            print(f"37: {winner_is_37} win rate: {winner_is_37/(i+1)*100} %")
+            print(f"38: {winner_is_38} win rate: {winner_is_38/(i+1)*100} %")
+    else:
+        raise ValueError("mode should be single or double")
