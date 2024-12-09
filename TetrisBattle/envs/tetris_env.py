@@ -3,7 +3,6 @@ import abc
 import numpy as np
 import random
 import gym
-import torch
 from gym import spaces
 from gym import utils
 from gym.utils import seeding
@@ -16,7 +15,7 @@ class TetrisEnv(gym.Env, abc.ABC):
     metadata = {'render.modes': ['human', 'rgb_array'], 
                 'obs_type': ['image', 'grid']}
 
-    def __init__(self, interface, gridchoice="none", obs_type="image", mode="rgb_array"):
+    def __init__(self, interface, gridchoice="none", obs_type="grid", mode="rgb_array"):
         super(TetrisEnv, self).__init__()
 
         # Define action and observation space
@@ -61,31 +60,29 @@ class TetrisEnv(gym.Env, abc.ABC):
     def take_turns(self):
         return self.game_interface.take_turns()
         
-    def reset(self):
+    def reset(self, avatar1_path=None, avatar2_path=None, name1=None, name2=None, fontsize=40):
 
         self.accum_rewards = 0
         self.infos = {}
         # Reset the state of the environment to an initial state
-        # since the height_sum, diff_sum, max_height, holes, np.std(heights) are all
-        self.game_interface.reset()
-        info = torch.FloatTensor([0, 0, 0, 0])
 
-        return info
+        ob = self.game_interface.reset(avatar1_path=avatar1_path, avatar2_path=avatar2_path, name1=name1, name2=name2, fontsize=fontsize)
+        ob, _, _, _, = self.game_interface.act(0)
+        return ob
     
     def render(self, mode='human', close=False):
-        return None
-        # # Render the environment to the screen
-        # img = self.get_screen_shot()
+        # Render the environment to the screen
+        img = self.game_interface.get_screen_shot()
 
-        # if mode == 'rgb_array':
-        #     return img
-        # elif mode == 'human':
-        #     from gym.envs.classic_control import rendering
-        #     if self.viewer is None:
-        #         self.viewer = rendering.SimpleImageViewer()
-        #     self.viewer.imshow(img)
+        if mode == 'rgb_array':
+            return img
+        elif mode == 'human':
+            from gym.envs.classic_control import rendering
+            if self.viewer is None:
+                self.viewer = rendering.SimpleImageViewer()
+            self.viewer.imshow(img)
 
-        #     return self.viewer.isopen
+            return self.viewer.isopen
 
 
 class TetrisSingleEnv(TetrisEnv):
@@ -93,13 +90,15 @@ class TetrisSingleEnv(TetrisEnv):
     metadata = {'render.modes': ['human', 'rgb_array'], 
                 'obs_type': ['image', 'grid']}
 
-    def __init__(self, gridchoice="none", obs_type="image", mode="rgb_array"):
+    def __init__(self, gridchoice="none", obs_type="grid", mode="rgb_array"):
         super(TetrisSingleEnv, self).__init__(TetrisSingleInterface, gridchoice, obs_type, mode)
 
     def step(self, action):
         # Execute one time step within the environment
-        ob, reward, end, infos = self.game_interface.act(action)
 
+        ob, reward, end, infos = self.game_interface.act(action)
+        ob, reward_noop, end, infos = self.game_interface.act(0)
+        reward += reward_noop
         # if 'height_sum' in infos:
         #     # print(infos)
         #     reward -= infos['height_sum'] * 0.2
@@ -119,22 +118,21 @@ class TetrisSingleEnv(TetrisEnv):
         #     reward -= infos['holes'] / 20 / 1000
 
         return ob, reward, end, infos
-    
-    def get_next_states(self):
-        return self.game_interface.get_next_states()
 
 class TetrisDoubleEnv(TetrisEnv):
     """Custom Environment that follows gym interface"""
     metadata = {'render.modes': ['human', 'rgb_array'], 
                 'obs_type': ['image', 'grid']}
 
-    def __init__(self, gridchoice="none", obs_type="image", mode="rgb_array"):
+    def __init__(self, gridchoice="none", obs_type="grid", mode="rgb_array"):
         super(TetrisDoubleEnv, self).__init__(TetrisDoubleInterface, gridchoice, obs_type, mode)
   
     def step(self, action):
         # Execute one time step within the environment
 
         ob, reward, end, infos = self.game_interface.act(action)
+        ob, reward_noop, end, infos = self.game_interface.act(0)
+        reward += reward_noop
 
         # if len(infos) != 0:
         #     reward += infos['height_sum'] / 50 / 1000
@@ -158,7 +156,7 @@ if __name__ == "__main__":
     start = time.time()
 
     last = 0
-    for i in range(10):
+    for i in range(200000):
 
         # if i % 5 == 0:
         #     env.take_turns()
@@ -172,8 +170,8 @@ if __name__ == "__main__":
         # else:
         #     action = 0
         ob, reward, done, infos = env.step(action)
-        #print(ob.shape)
-        print(ob)
+        print(ob.shape)
+        # print(ob)
         # print(reward)
         if len(infos) != 0:
             print(infos)

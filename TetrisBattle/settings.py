@@ -1,5 +1,6 @@
 import os
 import pygame
+
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
 # PARAMETERS
@@ -15,10 +16,9 @@ FPS = 100
 SCREENWIDTH  = 800
 SCREENHEIGHT = 600
 
-SPEED_UP = 1
+SPEED_UP = 10
 
-MAX_TIME = 130000
-# MAX_TIME = 4000
+MAX_TIME = 1000000
 
 PIECE_SHAPE_NUM = 4
 
@@ -44,15 +44,15 @@ PIECE_SHAPE_NUM = 4
 
 COLLIDE_DOWN_COUNT = 80.0 / SPEED_UP
 
-ROTATE_FREQ = 0.0 / SPEED_UP # 10
+ROTATE_FREQ = 10.0 / SPEED_UP
 
-FALL_DOWN_FREQ = 0 / SPEED_UP
+FALL_DOWN_FREQ = 40.0 / SPEED_UP
 
-NATRUAL_FALL_FREQ = 0.0 / SPEED_UP # 0
+NATRUAL_FALL_FREQ = 80.0 / SPEED_UP
 
-MOVE_SHIFT_FREQ = 0.0 / SPEED_UP
+MOVE_SHIFT_FREQ = 10.0 / SPEED_UP
 
-MOVE_DOWN_FREQ = 0.0 / SPEED_UP
+MOVE_DOWN_FREQ = 10.0 / SPEED_UP
 
 COMBO_COUNT_FREQ = 30.0 / SPEED_UP
 
@@ -103,27 +103,6 @@ tpieces = [[[0, 0, 7, 0], [0, 7, 7, 0], [0, 0, 7, 0], [0, 0, 0, 0]],
           [[0, 0, 7, 0], [0, 0, 7, 7], [0, 0, 7, 0], [0, 0, 0, 0]],
           [[0, 0, 7, 0], [0, 7, 7, 7], [0, 0, 0, 0], [0, 0, 0, 0]]]
 lspieces = [8, 8, 8, 8, 8, 8, 8, 8, 8, 8] #this is the lines sent piece aka garbage lines
-
-i_x = [0, -2, 0, -1]
-o_x = [-1, -1, -1, -1]
-j_x = [0, -1, 0, 0]
-l_x = [0, -1, 0, 0]
-z_x = [0, -1, 0, 0]
-s_x = [0, -1, 0, 0]
-t_x = [0, -1, 0, 0]
-
-i_len = [4, 1, 4, 1]
-o_len = [2, 2, 2, 2]
-j_len = [3, 2, 3, 2]
-l_len = [3, 2, 3, 2]
-z_len = [3, 2, 3, 2]
-s_len = [3, 2, 3, 2]
-t_len = [3, 2, 3, 2]
-
-
-
-
-
 
 PIECES_DICT = {
     'I': ipieces, 'O': opieces, 'J': jpieces,

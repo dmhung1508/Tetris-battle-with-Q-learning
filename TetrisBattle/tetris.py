@@ -33,7 +33,6 @@ def put_block_in_grid(grid, block, px, py):
         if -1 < x < GRID_WIDTH and -1 < y < len(grid[0]):
             grid[x][y] = c
 
-
 def collide(grid, block, px, py):
     feasibles = block.get_feasible()
 
@@ -294,7 +293,7 @@ def get_infos(board):
     for i in diffs:
         diff_sum += abs(i)
 
-    return height_sum, diff_sum, max_height, holes, np.std(heights)
+    return height_sum, diff_sum, max_height, holes
 
 class Piece(object):
     def __init__(self, _type, possible_shapes):
@@ -302,7 +301,7 @@ class Piece(object):
         self._type = _type
         self.possible_shapes = possible_shapes
 
-        self.current_shape_id = 0
+        self.current_shape_id = 0 
 
     def block_type(self):
         return self._type
@@ -362,8 +361,6 @@ class Piece(object):
     def rotate(self, _dir=1):
         self.current_shape_id += _dir
         self.current_shape_id %= len(self.possible_shapes)
-        # print("shape id", self.current_shape_id)
-
 
 class Buffer(object):
     '''
@@ -372,7 +369,6 @@ class Buffer(object):
     def __init__(self):
         self.now_list = []
         self.next_list = []
-        self.cur_block = None
 
         self.fill(self.now_list)
         self.fill(self.next_list)
@@ -385,13 +381,12 @@ class Buffer(object):
  
     '''
     def new_block(self):
-        self.cur_block = deepcopy(self.now_list.pop(0))
-        out = self.cur_block
+        out = self.now_list.pop(0)
         self.now_list.append(self.next_list.pop(0))
 
         if len(self.next_list) == 0:
             self.fill(self.next_list)
-        # print(out.block_type())
+
         return out
 
     def fill(self, _list):
@@ -541,7 +536,6 @@ class Tetris(object):
         self._n_used_block = 1
 
         self.buffer = Buffer()
-
         # list of the held piece
         self.held = None
         self.block = self.buffer.new_block()
@@ -629,9 +623,9 @@ class Tetris(object):
         block, px, py = self.block, self.px, self.py
         excess = len(self.grid[0]) - GRID_DEPTH
         b = block.now_block()
-
+        
         for i in range(len(self.grid)):
-            return_grids[i] = np.array(self.grid[i][excess:GRID_DEPTH + excess], dtype=np.float32)
+            return_grids[i] = np.array(self.grid[i][excess:GRID_DEPTH] + [1 for i in range(excess)], dtype=np.float32)
         return_grids[return_grids > 0] = 1
 
         add_y = hardDrop(self.grid, self.block, self.px, self.py)
@@ -654,13 +648,14 @@ class Tetris(object):
         for i in range(5): # 5 different pieces 
             _type = nextpieces[i].block_type()
             informations[PIECE_TYPE2NUM[_type] - 1][i + 1] = 1
+        informations[PIECE_TYPE2NUM[self.block.block_type()] - 1][6] = 1
         # index start from 6
 
-        informations[0][6] = self.sent / 100
-        informations[1][6] = self.combo / 10
-        informations[2][6] = self.pre_back2back
-        informations[3][6] = self._attacked / GRID_DEPTH
-        # informations[3][7] = self.time / MAX_TIME
+        informations[0][7] = self.sent / 100
+        informations[1][7] = self.combo / 10
+        informations[2][7] = self.pre_back2back
+        informations[3][7] = self._attacked / GRID_DEPTH
+        # informations[3][8] = self.time / MAX_TIME
 
         return_grids = np.concatenate((return_grids, informations), axis=0)
 
@@ -675,7 +670,7 @@ class Tetris(object):
         # b = block.now_block()
 
         for i in range(len(self.grid)):
-            return_grids[i] = np.array(self.grid[i][excess:GRID_DEPTH + excess], dtype=np.float32)
+            return_grids[i] = np.array(self.grid[i][excess:GRID_DEPTH], dtype=np.float32)
         return_grids[return_grids > 0] = 1
         # for x in range(BLOCK_WIDTH):
         #     for y in range(BLOCK_LENGTH):
@@ -796,12 +791,12 @@ class Tetris(object):
     def check_fallen(self):
         if collideDown(self.grid, self.block, self.px, self.py) == True:
             # self.stopcounter += 1
-            if self.LAST_FALL_DOWN_TIME >= FALL_DOWN_FREQ:
-                self._is_fallen = 1
-                put_block_in_grid(self.grid, self.block, self.px, self.py)
-                # print("fallen")
+            # if self.LAST_FALL_DOWN_TIME >= FALL_DOWN_FREQ:
+            self._is_fallen = 1
+            put_block_in_grid(self.grid, self.block, self.px, self.py)
+            # print("fallen")
 
-                return True
+            return True
 
         else:
             self._is_fallen = 0
@@ -885,7 +880,7 @@ class Tetris(object):
 
         if cleared >= 1:
             if self.tspin or self.tetris:
-                # print("next backtoback")
+                print("next backtoback")
                 self.now_back2back = 1
             else:
                 self.now_back2back = 0
@@ -895,7 +890,8 @@ class Tetris(object):
         self.cleared = cleared
         self.sent += scores
 
-        real_attacked = self._attacked - scores
+        real_attacked = max(0, self._attacked - scores)
+
         self.build_garbage(self.grid, real_attacked)
 
         self._attacked = 0
@@ -925,25 +921,13 @@ class Tetris(object):
                     garbage += 1
                     self.grid[x].pop(y)
                     self.grid[x] = [0] + self.grid[x]
-        length = len(self.grid[0])
-        temp = np.array(self.grid)
-        self.grid = (temp[:, length - 20:length]).tolist()
 
     def build_garbage(self, grid, attacked):
-        if attacked > 0 :
-            garbage_size = min(attacked, GRID_DEPTH)
-            for y in range(0, garbage_size):    
-                for i in range(GRID_WIDTH):
-                    # del player.grid[i][y] # deletes top of grid
-                    grid[i] = grid[i] + [8] # adds garbage lines at the bottom
-        else :
-            pass
-            # length = len(grid[0])
-            # minus_size = max(int(attacked/5), GRID_DEPTH - length)
-            # for i in range(GRID_WIDTH):
-            #     # del player.grid[i][y] # deletes top of grid
-            #     temp = grid[i]
-            #     grid[i] = temp[:length + minus_size] # adds garbage lines at the bottom
+        garbage_size = min(attacked, GRID_DEPTH)
+        for y in range(0, garbage_size):    
+            for i in range(GRID_WIDTH):
+                # del player.grid[i][y] # deletes top of grid
+                grid[i] = grid[i] + [8] # adds garbage lines at the bottom
 
         # return grid
 

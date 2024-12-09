@@ -37,9 +37,10 @@ def test_single(opt):
     model.eval()
 
     env = TetrisSingleEnv(gridchoice="none", obs_type="image", mode="human")
-    env.reset()
+    env.reset(obs)
 
     while True:
+
         player=env.game_interface.tetris_list[env.game_interface.now_player]
         tetris = player['tetris']
         com_event = player["com_event"]
@@ -74,9 +75,9 @@ def test_single(opt):
             else:
                 assert False
         tetris.px = new_x
-        _, reward, done, infos = env.step(0)
+        state, reward, done, infos = env.step(0)
         if drop:
-            _, reward, done, infos = env.step(2)
+            state, reward, done, infos = env.step(2)
         
         if done:
                 break
